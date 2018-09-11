@@ -145,9 +145,14 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.main_nav_food) {
 
-            android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            Intent intent = new Intent(MainActivity.this, FoodActivity.class);
+            startActivity(intent);
+
+
+
+          /*  android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.replace(R.id.flMain , new FoodFragment());
-            ft.commit();
+            ft.commit(); */
 
         } else if (id == R.id.main_nav_extra) {
 

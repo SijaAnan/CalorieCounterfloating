@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -61,7 +62,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             @Override
             public void onClick(final View v) {
 
-                //creating a popup menu
+                /* //creating a popup menu
                 PopupMenu popup = new PopupMenu(context, holder.full_name);
                 //inflating menu from xml resource
                 popup.inflate(R.menu.test);
@@ -107,25 +108,34 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
                 });
                 //displaying the popup
                 popup.show();
+                */
+
+
 
 
                 if (holder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
                 notifyItemChanged(selectedPos);
                 selectedPos = holder.getLayoutPosition();
                 notifyItemChanged(selectedPos);
-               // Toast.makeText(context, ((TextView) v).getText(), Toast.LENGTH_SHORT).show(); //Here I get the text string
-
-                //adding meal to database
+                Toast.makeText(context, ((TextView) v).getText(), Toast.LENGTH_SHORT).show(); //Here I get the text string
 
 
-                 //Storing the chosen food
 
+                // close keyboard on click
+
+                v.clearFocus();
+                InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
 
 
 
             }
         });
     }
+
+
 
     @Override
     public int getItemCount() {

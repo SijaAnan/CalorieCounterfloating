@@ -1,8 +1,11 @@
 package com.example.nadii.caloriecounter;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -11,7 +14,11 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.OvershootInterpolator;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -32,47 +39,104 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class FoodActivity extends AppCompatActivity {
+public class FoodActivity extends AppCompatActivity implements View.OnClickListener {
+    FloatingActionButton fabMain, fabOne, fabTwo, fabThree;
+    Float translationY = 100f;
 
-    //create firebase instase.
+    OvershootInterpolator interpolator = new OvershootInterpolator();
+
+    private static final String TAG = "FoodActivity";
+
+    Boolean isMenuOpen = false;
     private FirebaseAuth mAuth;
-
-    private DatabaseReference mDataBase;
-
-    private Button mVerifyBtn;
-    private EditText mName;
-
-
-    EditText   search_edit_text;
-    RecyclerView recyclerView;
-    DatabaseReference databaseReference;
-    FirebaseUser firebaseUser;
     ArrayList<String> fullNameList;
+    private DatabaseReference mDataBase;
+    RecyclerView recyclerView;
     SearchAdapter searchAdapter;
+    FirebaseUser firebaseUser;
 
+    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food_activity);
 
-
-        // Here I want the user to put his consumed food+calories
-
-        search_edit_text = (EditText) findViewById(R.id.search_edit_text);
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-
-
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        initFabMenu();
+
+    }
+
+
+    private void initFabMenu() {
+        fabMain = findViewById(R.id.fabMain);
+        fabOne = findViewById(R.id.fabOne);
+        fabTwo = findViewById(R.id.fabTwo);
+        fabThree = findViewById(R.id.fabThree);
+
+        fabOne.setAlpha(0f);
+        fabTwo.setAlpha(0f);
+        fabThree.setAlpha(0f);
+
+        fabOne.setTranslationY(translationY);
+        fabTwo.setTranslationY(translationY);
+        fabThree.setTranslationY(translationY);
+
+        fabMain.setOnClickListener(this);
+        fabOne.setOnClickListener( this);
+        fabTwo.setOnClickListener( this);
+        fabThree.setOnClickListener( this);
+    }
+
+    private void openMenu() {
+        isMenuOpen = !isMenuOpen;
+
+        fabMain.animate().setInterpolator(interpolator).rotation(45f).setDuration(300).start();
+
+        fabOne.animate().translationY(0f).alpha(1f).setInterpolator(interpolator).setDuration(300).start();
+        fabTwo.animate().translationY(0f).alpha(1f).setInterpolator(interpolator).setDuration(300).start();
+        fabThree.animate().translationY(0f).alpha(1f).setInterpolator(interpolator).setDuration(300).start();
+
+
+    }
+
+    private void closeMenu() {DatabaseReference databaseReference;
+        isMenuOpen = !isMenuOpen;
+
+        fabMain.animate().setInterpolator(interpolator).rotation(0f).setDuration(300).start();
+
+        fabOne.animate().translationY(translationY).alpha(0f).setInterpolator(interpolator).setDuration(300).start();
+        fabTwo.animate().translationY(translationY).alpha(0f).setInterpolator(interpolator).setDuration(300).start();
+        fabThree.animate().translationY(translationY).alpha(0f).setInterpolator(interpolator).setDuration(300).start();
+
+    }
+
+    private void handleFabOne() {
+
+        Log.i(TAG, "handleFabOne: ");
+
+        final AlertDialog.Builder mBuilder = new AlertDialog.Builder(FoodActivity.this);
+
+
+
+        View mView = getLayoutInflater().inflate(R.layout.search_food, null);
+
+        EditText search_edit_text = (EditText) mView.findViewById(R.id.search_edit_text);
+        recyclerView = (RecyclerView) mView.findViewById(R.id.recyclerView);
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
 
+        mBuilder.setView(mView);
+        AlertDialog dialog = mBuilder.create();
+        dialog.show();
+
         /*
-         * Create a array list for each node you want to use
+         * Create an array list for each node you want to use
          * */
         fullNameList = new ArrayList<>();
 
@@ -89,8 +153,11 @@ public class FoodActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (!s.toString().isEmpty()) {
+
+                if (!s.toString().isEmpty())
+                {
                     setAdapter(s.toString());
+
                 } else {
                     /*
                      * Clear the list when editText is empty
@@ -99,17 +166,56 @@ public class FoodActivity extends AppCompatActivity {
                     recyclerView.removeAllViews();
                 }
             }
+
+
         });
+
+
+
+    }
+
+
+
+    public void onClick(View view) {
+
+
+
+        switch (view.getId()) {
+            case R.id.fabMain:
+                Log.i(TAG, "onClick: fab main");
+                if (isMenuOpen) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+                break;
+            case R.id.fabOne:
+                Log.i(TAG, "onClick: fab one");
+                handleFabOne();
+                if (isMenuOpen) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+                break;
+            case R.id.fabTwo:
+                Log.i(TAG, "onClick: fab two");
+                break;
+            case R.id.fabThree:
+                Log.i(TAG, "onClick: fab three");
+                break;
+        }
+
     }
 
     private void setAdapter(final String searchedString) {
+
         databaseReference.child("food").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 /*
                  * Clear the list for every new search
                  * */
-                //fullNameList.clear();
 
                 recyclerView.removeAllViews();
 
@@ -119,10 +225,10 @@ public class FoodActivity extends AppCompatActivity {
                  * Search all users for matching searched string
                  * */
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
                     String food = snapshot.getKey(); // Food string
                     String Calories = snapshot.child("Calories").getValue(String.class); // calories amount (string)
-                    //String user_name = snapshot.child("user_name").getValue(String.class);
-                    // String profile_pic = snapshot.child("profile_pic").getValue(String.class);
+
 
                     if (food.toLowerCase().contains(searchedString.toLowerCase())) {
                         fullNameList.add(food);
@@ -154,3 +260,5 @@ public class FoodActivity extends AppCompatActivity {
     }
 
 }
+
+

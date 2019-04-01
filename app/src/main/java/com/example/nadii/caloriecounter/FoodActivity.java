@@ -1,33 +1,20 @@
 package com.example.nadii.caloriecounter;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,10 +23,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
-public class FoodActivity extends AppCompatActivity implements View.OnClickListener {
+public class FoodActivity extends AppCompatActivity implements View.OnClickListener, SearchAdapter.SearchListener
+{
     FloatingActionButton fabMain, fabOne, fabTwo, fabThree;
     Float translationY = 100f;
 
@@ -51,14 +38,17 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseAuth mAuth;
     ArrayList<String> fullNameList;
     private DatabaseReference mDataBase;
-    RecyclerView recyclerView;
+    RecyclerView  recyclerView;
     SearchAdapter searchAdapter;
-    FirebaseUser firebaseUser;
+    FirebaseUser  firebaseUser;
 
     DatabaseReference databaseReference;
 
+    private EditText search_edit_text;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.food_activity);
 
@@ -70,7 +60,8 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private void initFabMenu() {
+    private void initFabMenu()
+    {
         fabMain = findViewById(R.id.fabMain);
         fabOne = findViewById(R.id.fabOne);
         fabTwo = findViewById(R.id.fabTwo);
@@ -85,12 +76,13 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
         fabThree.setTranslationY(translationY);
 
         fabMain.setOnClickListener(this);
-        fabOne.setOnClickListener( this);
-        fabTwo.setOnClickListener( this);
-        fabThree.setOnClickListener( this);
+        fabOne.setOnClickListener(this);
+        fabTwo.setOnClickListener(this);
+        fabThree.setOnClickListener(this);
     }
 
-    private void openMenu() {
+    private void openMenu()
+    {
         isMenuOpen = !isMenuOpen;
 
         fabMain.animate().setInterpolator(interpolator).rotation(45f).setDuration(300).start();
@@ -102,7 +94,9 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void closeMenu() {DatabaseReference databaseReference;
+    private void closeMenu()
+    {
+        DatabaseReference databaseReference;
         isMenuOpen = !isMenuOpen;
 
         fabMain.animate().setInterpolator(interpolator).rotation(0f).setDuration(300).start();
@@ -113,17 +107,17 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void handleFabOne() {
+    private void handleFabOne()
+    {
 
         Log.i(TAG, "handleFabOne: ");
 
         final AlertDialog.Builder mBuilder = new AlertDialog.Builder(FoodActivity.this);
 
 
-
         View mView = getLayoutInflater().inflate(R.layout.search_food, null);
 
-        EditText search_edit_text = (EditText) mView.findViewById(R.id.search_edit_text);
+        search_edit_text = (EditText) mView.findViewById(R.id.search_edit_text);
         recyclerView = (RecyclerView) mView.findViewById(R.id.recyclerView);
 
         recyclerView.setHasFixedSize(true);
@@ -140,61 +134,73 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
          * */
         fullNameList = new ArrayList<>();
 
-        search_edit_text.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                fullNameList.clear();
-                recyclerView.removeAllViews();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-                if (!s.toString().isEmpty())
-                {
-                    setAdapter(s.toString());
-
-                } else {
-                    /*
-                     * Clear the list when editText is empty
-                     * */
-                    fullNameList.clear();
-                    recyclerView.removeAllViews();
-                }
-            }
-
-
-        });
+        search_edit_text.addTextChangedListener(watcher);
 
 
 
     }
 
+    private TextWatcher watcher = new TextWatcher()
+    {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after)
+        {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count)
+        {
+            fullNameList.clear();
+            recyclerView.removeAllViews();
+        }
+
+        @Override
+        public void afterTextChanged(Editable s)
+        {
+
+            if (!s.toString().isEmpty())
+            {
+                setAdapter(s.toString());
+
+            }
+            else
+            {
+                /*
+                 * Clear the list when editText is empty
+                 * */
+                fullNameList.clear();
+                recyclerView.removeAllViews();
+            }
+        }
+    };
 
 
-    public void onClick(View view) {
+    public void onClick(View view)
+    {
 
 
-
-        switch (view.getId()) {
+        switch (view.getId())
+        {
             case R.id.fabMain:
                 Log.i(TAG, "onClick: fab main");
-                if (isMenuOpen) {
+                if (isMenuOpen)
+                {
                     closeMenu();
-                } else {
+                }
+                else
+                {
                     openMenu();
                 }
                 break;
             case R.id.fabOne:
                 Log.i(TAG, "onClick: fab one");
                 handleFabOne();
-                if (isMenuOpen) {
+                if (isMenuOpen)
+                {
                     closeMenu();
-                } else {
+                }
+                else
+                {
                     openMenu();
                 }
                 break;
@@ -208,11 +214,15 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void setAdapter(final String searchedString) {
+    private void setAdapter(final String searchedString)
+    {
+        recyclerView.setVisibility(View.VISIBLE);
 
-        databaseReference.child("food").addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.child("food").addListenerForSingleValueEvent(new ValueEventListener()
+        {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(DataSnapshot dataSnapshot)
+            {
                 /*
                  * Clear the list for every new search
                  * */
@@ -224,13 +234,15 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
                 /*
                  * Search all users for matching searched string
                  * */
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                {
 
                     String food = snapshot.getKey(); // Food string
                     String Calories = snapshot.child("Calories").getValue(String.class); // calories amount (string)
 
 
-                    if (food.toLowerCase().contains(searchedString.toLowerCase())) {
+                    if (food.toLowerCase().contains(searchedString.toLowerCase()))
+                    {
                         fullNameList.add(food);
                         counter++;
 
@@ -243,22 +255,29 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
                         break;
                 }
 
-                searchAdapter = new SearchAdapter(FoodActivity.this, fullNameList);
+                searchAdapter = new SearchAdapter(FoodActivity.this, fullNameList, FoodActivity.this);
                 recyclerView.setAdapter(searchAdapter);
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError)
+            {
 
             }
         });
-
-
-
-
-
     }
 
+    @Override
+    public void onItemSelect(String text)
+    {
+        if (search_edit_text != null)
+        {
+            search_edit_text.removeTextChangedListener(watcher);
+            search_edit_text.setText(text);
+            search_edit_text.addTextChangedListener(watcher);
+
+            recyclerView.removeAllViews();
+            recyclerView.setVisibility(View.INVISIBLE);
+        }
+    }
 }
-
-

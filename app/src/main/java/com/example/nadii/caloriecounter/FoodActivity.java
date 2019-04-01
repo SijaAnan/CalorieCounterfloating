@@ -12,7 +12,9 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -23,28 +25,28 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class FoodActivity extends AppCompatActivity implements View.OnClickListener, SearchAdapter.SearchListener
 {
-    FloatingActionButton fabMain, fabOne, fabTwo, fabThree;
-    Float translationY = 100f;
-
-    OvershootInterpolator interpolator = new OvershootInterpolator();
-
+    private FloatingActionButton fabMain, fabOne, fabTwo, fabThree;
+    private Float translationY = 100f;
+    private OvershootInterpolator interpolator = new OvershootInterpolator();
     private static final String TAG = "FoodActivity";
-
-    Boolean isMenuOpen = false;
+    private Boolean isMenuOpen = false;
     private FirebaseAuth mAuth;
-    ArrayList<String> fullNameList;
+    private ArrayList<String> fullNameList;
     private DatabaseReference mDataBase;
-    RecyclerView  recyclerView;
-    SearchAdapter searchAdapter;
-    FirebaseUser  firebaseUser;
+    private RecyclerView  recyclerView;
+    private SearchAdapter searchAdapter;
+    private FirebaseUser  firebaseUser;
+    private DatabaseReference databaseReference;
+    private Button OkButton;
+    private EditText search_edit_text, caloriesAmount;
+    private AlertDialog dialog;
 
-    DatabaseReference databaseReference;
 
-    private EditText search_edit_text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -54,6 +56,8 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
         databaseReference = FirebaseDatabase.getInstance().getReference();
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+
 
         initFabMenu();
 
@@ -96,7 +100,7 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
     private void closeMenu()
     {
-        DatabaseReference databaseReference;
+
         isMenuOpen = !isMenuOpen;
 
         fabMain.animate().setInterpolator(interpolator).rotation(0f).setDuration(300).start();
@@ -119,15 +123,46 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
         search_edit_text = (EditText) mView.findViewById(R.id.search_edit_text);
         recyclerView = (RecyclerView) mView.findViewById(R.id.recyclerView);
-
+        caloriesAmount =  (EditText) mView.findViewById(R.id.caloriesAmount);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
 
+        OkButton = (Button)mView.findViewById(R.id.ok_button);
+
+        OkButton.setOnClickListener(new View.OnClickListener() { //When pressing ok on the dialog
+            @Override
+            public void onClick(View view) {
+
+                HashMap<String , String> userMeal = new HashMap<>();
+                String myFood, myCalories;
+
+                myFood = search_edit_text.getText().toString();
+                myCalories = caloriesAmount.getText().toString();
+
+                FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
+                String current_uid = current_user.getUid();
+                databaseReference = FirebaseDatabase.getInstance().getReference();
+                databaseReference = databaseReference.child("users").child(current_uid);
+                databaseReference = databaseReference.child("food");
+
+                userMeal.put( myFood, myCalories);
+                databaseReference.child("Breakfast").setValue(userMeal);
+
+                dialog.dismiss();
+
+
+
+            }
+        });
+
         mBuilder.setView(mView);
-        AlertDialog dialog = mBuilder.create();
+        dialog = mBuilder.create();
         dialog.show();
+
+
+
 
         /*
          * Create an array list for each node you want to use

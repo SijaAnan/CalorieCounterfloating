@@ -144,8 +144,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
                 {
                     _searchListener.onItemSelect(text);
                 }
-                fullNameList.clear();
-                notifyDataSetChanged();
+//                fullNameList.clear();
+//                notifyDataSetChanged();
 
             }
         });

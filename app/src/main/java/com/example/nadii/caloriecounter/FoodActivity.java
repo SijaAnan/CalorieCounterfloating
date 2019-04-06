@@ -13,8 +13,11 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,7 +27,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -42,8 +49,9 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
     private SearchAdapter searchAdapter;
     private FirebaseUser  firebaseUser;
     private DatabaseReference databaseReference;
-    private Button OkButton;
-    private EditText search_edit_text, caloriesAmount;
+    private Button OkButton, foodButton;
+    private CheckBox checkBox;
+    private EditText search_edit_text, caloriesAmount, addFood;
     private AlertDialog dialog;
 
 
@@ -111,46 +119,135 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    private void handleFabOne()
+
+
+
+
+    private void handleFab(final String s)
     {
 
-        Log.i(TAG, "handleFabOne: ");
+        Log.i(TAG, "handleFab: " + s);
 
         final AlertDialog.Builder mBuilder = new AlertDialog.Builder(FoodActivity.this);
 
 
         View mView = getLayoutInflater().inflate(R.layout.search_food, null);
 
+
+
         search_edit_text = (EditText) mView.findViewById(R.id.search_edit_text);
         recyclerView = (RecyclerView) mView.findViewById(R.id.recyclerView);
         caloriesAmount =  (EditText) mView.findViewById(R.id.caloriesAmount);
+        addFood =  (EditText) mView.findViewById(R.id.addFoodEdit);
+        OkButton = (Button)mView.findViewById(R.id.ok_button);
+        foodButton = (Button)mView.findViewById(R.id.addFoodButton);
+        checkBox = (CheckBox)mView.findViewById(R.id.checkBox);
+
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
 
 
-        OkButton = (Button)mView.findViewById(R.id.ok_button);
+        addFood.setEnabled(false);
+        foodButton.setEnabled(false);
+
+
+        checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(checkBox.isChecked())
+                {
+                    search_edit_text.setEnabled(false);
+                    caloriesAmount.setEnabled(false);
+                    addFood.setEnabled(true);
+                    OkButton.setEnabled(false);
+                    foodButton.setEnabled(true);
+
+                    search_edit_text.setHint("");
+                    caloriesAmount.setHint("");
+                    addFood.setHint("Add food to database");
+
+
+
+                }
+                else
+                {
+
+                    search_edit_text.setEnabled(true);
+                    caloriesAmount.setEnabled(true);
+                    addFood.setEnabled(false);
+                    OkButton.setEnabled(true);
+                    foodButton.setEnabled(false);
+
+
+                    search_edit_text.setHint("Search for what you've eaten...");
+                    caloriesAmount.setHint("Enter calories amount");
+                    addFood.setHint("");
+
+                }
+
+
+
+            }
+        });
+
 
         OkButton.setOnClickListener(new View.OnClickListener() { //When pressing ok on the dialog
             @Override
             public void onClick(View view) {
 
-                HashMap<String , String> userMeal = new HashMap<>();
+                //HashMap<String , String> userMeal = new HashMap<>();
                 String myFood, myCalories;
 
                 myFood = search_edit_text.getText().toString();
                 myCalories = caloriesAmount.getText().toString();
+                Calendar c = Calendar.getInstance();
+                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+                String formattedDate = df.format(c.getTime());
 
                 FirebaseUser current_user = FirebaseAuth.getInstance().getCurrentUser();
                 String current_uid = current_user.getUid();
                 databaseReference = FirebaseDatabase.getInstance().getReference();
                 databaseReference = databaseReference.child("users").child(current_uid);
-                databaseReference = databaseReference.child("food");
+                databaseReference = databaseReference.child("food").child(formattedDate).child(s).child(myFood);
 
-                userMeal.put( myFood, myCalories);
-                databaseReference.child("Breakfast").setValue(userMeal);
+                //userMeal.put( myFood, myCalories);
+                databaseReference.setValue(myCalories);
+                //databaseReference.child("Breakfast").setValue(userMeal);
 
-                dialog.dismiss();
+
+                dialog.cancel();
+
+
+
+            }
+        });
+
+
+        foodButton = (Button)mView.findViewById(R.id.addFoodButton);
+
+        foodButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                String addedFood;
+                addedFood = addFood.getText().toString();
+
+                if(addedFood != "")
+                {
+
+                    databaseReference = FirebaseDatabase.getInstance().getReference();
+                    databaseReference = databaseReference.child("food");
+                    databaseReference.child(addedFood).setValue("");
+
+                    Toast.makeText(getApplicationContext(),"Added " + addFood.getText() + " to database", Toast.LENGTH_SHORT).show();
+
+                    addFood.getText().clear();
+
+                }
+
 
 
 
@@ -180,11 +277,15 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after)
         {
+
+
         }
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count)
         {
+
+
             fullNameList.clear();
             recyclerView.removeAllViews();
         }
@@ -195,6 +296,9 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
 
             if (!s.toString().isEmpty())
             {
+
+
+
                 setAdapter(s.toString());
 
             }
@@ -229,7 +333,7 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.fabOne:
                 Log.i(TAG, "onClick: fab one");
-                handleFabOne();
+                handleFab("Breakfast");
                 if (isMenuOpen)
                 {
                     closeMenu();
@@ -241,9 +345,28 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.fabTwo:
                 Log.i(TAG, "onClick: fab two");
+                handleFab("Lunch");
+                if (isMenuOpen)
+                {
+                    closeMenu();
+                }
+                else
+                {
+                    openMenu();
+                }
+
                 break;
             case R.id.fabThree:
                 Log.i(TAG, "onClick: fab three");
+                handleFab("Dinner");
+                if (isMenuOpen)
+                {
+                    closeMenu();
+                }
+                else
+                {
+                    openMenu();
+                }
                 break;
         }
 
@@ -252,6 +375,8 @@ public class FoodActivity extends AppCompatActivity implements View.OnClickListe
     private void setAdapter(final String searchedString)
     {
         recyclerView.setVisibility(View.VISIBLE);
+
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         databaseReference.child("food").addListenerForSingleValueEvent(new ValueEventListener()
         {

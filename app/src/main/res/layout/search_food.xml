@@ -27,6 +27,7 @@
         android:layout_marginStart="77dp"
         android:layout_marginTop="42dp"
         android:hint="Search for what you've eaten..."
+        android:theme="@style/EditTextTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.618"
         app:layout_constraintStart_toStartOf="parent"
@@ -36,9 +37,10 @@
         android:id="@+id/caloriesAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="256dp"
+        android:layout_marginTop="80dp"
         android:ems="10"
         android:hint="Enter calories amount"
+        android:theme="@style/EditTextTheme"
         android:inputType="number"
         app:layout_constraintTop_toTopOf="@+id/recyclerView"
         tools:layout_editor_absoluteX="0dp" />
@@ -48,12 +50,54 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="84dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="50dp"
         android:text="Ok"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.943"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/caloriesAmount" />
+
+    <EditText
+        android:id="@+id/addFoodEdit"
+        android:layout_width="180dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="100dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Add food to database"
+        android:theme="@style/EditTextTheme"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerView"
+        app:layout_constraintHorizontal_bias="0.516"
+        app:layout_constraintStart_toStartOf="@+id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/ok_button" />
+
+    <Button
+        android:id="@+id/addFoodButton"
+        android:layout_width="wrap_content"
+        android:layout_height="39dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="ADD"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addFoodEdit" />
+
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="136dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="8dp"
+        android:text="Enable adding food"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerView"
+        app:layout_constraintHorizontal_bias="0.126"
+        app:layout_constraintStart_toStartOf="@+id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/ok_button" />
+
+
 
 </android.support.constraint.ConstraintLayout>
